@@ -1,0 +1,3 @@
+Radim za ocjenu 6.
+
+Uskoro se pise ostalo...
