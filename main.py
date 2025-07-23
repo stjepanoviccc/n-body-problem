@@ -8,7 +8,11 @@ import tkinter as tk
 from tkinter import messagebox
 
 G = 6.67430e-11
+N_INTERATIONS = 500 # for more circular orbits, use 1500+ (little more loading of animation)
+SEQ_FILE = "outputs/nbody_seq.csv"
+PAR_FILE = "outputs/nbody_par.csv"
 
+# Celestial object - name, mass(kg), position(x,y), velocity(vx,vy)
 class Body:
     def __init__(self, name, mass, x, y, vx, vy):
         self.name = name
@@ -21,6 +25,7 @@ class Body:
     def to_row(self):
         return [self.name, self.x, self.y, self.vx, self.vy]
 
+# Compute gravitational force on a body from all others - Send a tuple of body/bodies and output is net force(fx,fy)
 def compute_force(args):
     body_i, bodies = args
     fx, fy = 0.0, 0.0
@@ -37,6 +42,8 @@ def compute_force(args):
         fy += force * dy / dist
     return (fx, fy)
 
+# Updates all body states for one timestep (dt in seconds)
+# If parallel is True, uses multiprocessing to compute forces in parallel
 def update_bodies(bodies, dt, parallel=False):
     if parallel:
         with Pool() as pool:
@@ -53,6 +60,7 @@ def update_bodies(bodies, dt, parallel=False):
         body.x += body.vx * dt
         body.y += body.vy * dt
 
+# filename(where to write), data(list of Body objects for each iteration)
 def write_to_csv(filename, data):
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
@@ -61,6 +69,8 @@ def write_to_csv(filename, data):
             for body in bodies:
                 writer.writerow([i] + body.to_row())
 
+# Runs the entire simulation for n_iterations with a given timestep dt
+# If parallel is True, uses multiprocessing to update bodies in parallel
 def simulate(n_iterations=100, dt=60, parallel=False):
     earth_x = 1.496e11
     earth_y = 0
@@ -90,6 +100,7 @@ def simulate(n_iterations=100, dt=60, parallel=False):
         results.append([Body(b.name, b.mass, b.x, b.y, b.vx, b.vy) for b in bodies])
     return results
 
+# Animates the simulation results using matplotlib
 def plot_simulation(data, compatibility=None):
     fig, ax = plt.subplots()
     ax.set_aspect('equal')
@@ -123,12 +134,12 @@ def plot_simulation(data, compatibility=None):
             root = tk.Tk()
             root.withdraw()
             if compatibility is None:
-                msg = "Simulacija završena."
+                msg = "Simulation ended."
             elif compatibility:
-                msg = "Simulacije su kompatibilne."
+                msg = "Simulations are compatible."
             else:
-                msg = "Simulacije se razlikuju!"
-            messagebox.showinfo("Kraj simulacije", msg)
+                msg = "Simulacije are not compatible!"
+            messagebox.showinfo("End of simulation.", msg)
             root.destroy()
 
         return scatters
@@ -136,6 +147,8 @@ def plot_simulation(data, compatibility=None):
     ani = FuncAnimation(fig, update, frames=len(data), interval=50, blit=True)
     plt.show()
 
+# Compares two sets of simulation results for compatibility
+# Returns True if results are compatible within a given epsilon tolerance
 def results_are_compatible(data1, data2, epsilon=1e5):
     if len(data1) != len(data2):
         return False
@@ -153,16 +166,17 @@ def results_are_compatible(data1, data2, epsilon=1e5):
 
 if __name__ == '__main__':
     dt = 60 * 60 * 6
-    print("Pokrećem simulaciju sekvencijalno...")
-    data_seq = simulate(n_iterations=1500, dt=dt, parallel=False)
-    write_to_csv("nbody_sekvencijalna.csv", data_seq)
 
-    print("Pokrećem simulaciju paralelno...")
-    data_par = simulate(n_iterations=1500, dt=dt, parallel=True)
-    write_to_csv("nbody_paralelna.csv", data_par)
+    print("Starting sequential simulation...")
+    data_seq = simulate(n_iterations=N_INTERATIONS, dt=dt, parallel=False)
+    write_to_csv(SEQ_FILE, data_seq)
 
-    print("Upoređujem rezultate simulacija...")
+    print("Starting parallel simuation...")
+    data_par = simulate(n_iterations=N_INTERATIONS, dt=dt, parallel=True)
+    write_to_csv(PAR_FILE, data_par)
+
+    print("Compare simulation results...")
     compatible = results_are_compatible(data_seq, data_par)
 
-    print("Prikazujem animaciju sekvencijalne simulacije...")
+    print("Showing sequential simulation...")
     plot_simulation(data_seq, compatibility=compatible)
