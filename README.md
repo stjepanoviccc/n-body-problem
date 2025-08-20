@@ -2,11 +2,15 @@
 ![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=white)
 
 ## Technologies Used:
-**Python:** 3.10.12
-**matplotlib:** for visualization
-**multiprocessing:** for parallel computations
-**tkinter:** for simple GUI alerts
-**CSV:** for data export and comparison
+**Python:** 3.10.12 
+
+**matplotlib:** for visualization 
+
+**multiprocessing:** for parallel computations 
+
+**tkinter:** for simple GUI alerts 
+
+**CSV:** for data export and comparison 
 
 ## Version:  
 **Python**: 3.10.12
@@ -67,6 +71,53 @@ This project simulates the gravitational interaction between celestial bodies (e
 ### 4. Saves results to nbody_par.csv
 ### 5. Compares the results for compatibility
 ### 6. Displays animation of sequential simulation
+
+## These are Math Formulas I have used in this project
+1. Distance Formula (Pythagorean theorem)
+   Calculate distance between bodies i and y: r = √((xj - xi)² + (yj - yi)²)
+   https://en.wikipedia.org/wiki/Pythagorean_theorem
+```
+dx = body_j.x - body_i.x
+dy = body_j.y - body_i.y
+dist = math.hypot(dx, dy)
+```
+
+2. Newtons Law of Universal Gravitation
+   Gravitation force between two bodies: F = G * (mi * mj) / r²
+   https://en.wikipedia.org/wiki/Newton%27s_law_of_universal_gravitation
+
+```
+force = G * body_i.mass * body_j.mass / dist**2
+```
+
+3. Force Components and Acceleration - Newtons Second Law of Motion
+   Force is decomposed into x and y, and then acceleration is computed using Newtons second law:
+   Fx = F * (dx / r), Fy = F * (dy / r)
+   ax = Fx / mi, ay = Fy / mi
+   https://en.wikipedia.org/wiki/Newton%27s_laws_of_motion
+
+```
+fx += force * dx / dist
+fy += force * dy / dist
+ax = fx / body.mass
+ay = fy / body.mass
+```
+
+4. Euler-Cromer Integration (Numerical Method)
+   Velocities are updated first using acceleration, and positions are updated using the new velocities:
+   vx(t+Δt) = vx(t) + ax * Δt
+   x(t+Δt) = x(t) + vx(t+Δt) * Δt
+   vy(t+Δt) = vy(t) + ay * Δt
+   y(t+Δt) = y(t) + vy(t+Δt) * Δt
+   https://en.wikipedia.org/wiki/Euler_method#Semi-implicit_Euler_method
+
+```
+body.vx += ax * dt
+body.vy += ay * dt
+body.x += body.vx * dt
+body.y += body.vy * dt
+```
+
 
 ## Getting Started:   
 Clone this repo, navigate to root folder and start project with **python main.py** or **python3 main.py**. If you don't have **matlibplot** or **tkinter**, then you need to install them with **pip/pip3**... 
